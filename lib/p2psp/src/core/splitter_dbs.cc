@@ -12,6 +12,16 @@
 
 #include "splitter_dbs.h"
 #include "../util/trace.h"
+#include <fstream>
+#include <cstdlib>
+#include <iterator>
+#include <boost/lexical_cast.hpp>
+using boost::lexical_cast;
+#include <boost/uuid/uuid.hpp>
+using boost::uuids::uuid;
+#include <boost/uuid/uuid_generators.hpp>
+using boost::uuids::random_generator;
+#include <boost/uuid/uuid_io.hpp>
 
 namespace p2psp {
   using namespace std;
@@ -302,7 +312,13 @@ namespace p2psp {
       make_shared<asio::ip::tcp::socket>(boost::ref(io_service_));
     acceptor_.accept(*connection);
     HandleAPeerArrival(connection);
-
+	//File to examine chunk data
+	//string fname = "chunk_output"+to_string(rand()%10+1)+".txt";
+	string fname = lexical_cast<string>((random_generator())());
+	fstream file(fname,ios::out);
+	ostream_iterator<char> output_iterator(file);
+	ostream_iterator<char> output_iterator2(file, "\nChunk Number\n");
+	ostringstream oss,f4b;
     // Threads
     thread t1(bind(&SplitterIMS::HandleArrivals, this));
     thread t2(bind(&SplitterDBS::ModerateTheTeam, this));
@@ -322,7 +338,17 @@ namespace p2psp {
         copy(asio::buffer_cast<const char *>(chunk.data()),
              asio::buffer_cast<const char *>(chunk.data()) + chunk.size(),
              message.data() + sizeof(uint16_t));
-
+             size_t len = to_string(chunk_number_).length();
+		//file<<to_string(chunk_number_).c_str()<<endl;
+		//copy(asio::buffer_cast<const char *>(chunk.data()),
+             //asio::buffer_cast<const char *>(chunk.data()) + 4,ostream_iterator<char>(f4b));
+		//file << "First 4 bytes of chunk\n"<<f4b.str()<<"\n\n";
+		//cout<<chunk_number_<<"\n\n";
+		//*message.data() = ntohs(*message.data());
+        copy(asio::buffer_cast<const char *>(chunk.data()),
+             asio::buffer_cast<const char *>(chunk.data()) + chunk.size(),ostream_iterator<char>(oss));
+        file << oss.str();
+        oss.str("");//f4b.str("");
         SendChunk(message, peer);
 
         destination_of_chunk_[chunk_number_ % buffer_size_] = peer;
@@ -330,10 +356,12 @@ namespace p2psp {
         ComputeNextPeerNumber(peer);
       } catch (const std::out_of_range &oor) {
         TRACE("The monitor peer has died!");
+        file.close();
         exit(-1);
       }
 
       chunk.consume(bytes_transferred);
+      
     }
   }
 
