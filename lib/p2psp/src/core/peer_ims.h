@@ -25,6 +25,7 @@
 #include "../util/trace.h"
 #include "common.h"
 
+
 using namespace boost::asio;
 
 namespace p2psp {
@@ -77,6 +78,8 @@ namespace p2psp {
     boost::thread_group thread_group_;                    // Thread group to join all threads
     std::vector<ip::udp::endpoint> peer_list_;            // DBS variables
 
+    
+  
   public:
 
     PeerIMS();
