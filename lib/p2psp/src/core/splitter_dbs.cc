@@ -314,11 +314,11 @@ namespace p2psp {
     HandleAPeerArrival(connection);
 	//File to examine chunk data
 	//string fname = "chunk_output"+to_string(rand()%10+1)+".txt";
-	string fname = lexical_cast<string>((random_generator())());
-	fstream file(fname,ios::out);
-	ostream_iterator<char> output_iterator(file);
-	ostream_iterator<char> output_iterator2(file, "\nChunk Number\n");
-	ostringstream oss,f4b;
+	//string fname = lexical_cast<string>((random_generator())());
+	//fstream file(fname,ios::out);
+	//ostream_iterator<char> output_iterator(file);
+	//ostream_iterator<char> output_iterator2(file, "\nChunk Number\n");
+	//ostringstream oss,f4b;
     // Threads
     thread t1(bind(&SplitterIMS::HandleArrivals, this));
     thread t2(bind(&SplitterDBS::ModerateTheTeam, this));
@@ -345,10 +345,10 @@ namespace p2psp {
 		//file << "First 4 bytes of chunk\n"<<f4b.str()<<"\n\n";
 		//cout<<chunk_number_<<"\n\n";
 		//*message.data() = ntohs(*message.data());
-        copy(asio::buffer_cast<const char *>(chunk.data()),
-             asio::buffer_cast<const char *>(chunk.data()) + chunk.size(),ostream_iterator<char>(oss));
-        file << oss.str();
-        oss.str("");//f4b.str("");
+        //copy(asio::buffer_cast<const char *>(chunk.data()),
+             //asio::buffer_cast<const char *>(chunk.data()) + chunk.size(),ostream_iterator<char>(oss));
+        //file << oss.str();
+        //oss.str("");//f4b.str("");
         SendChunk(message, peer);
 
         destination_of_chunk_[chunk_number_ % buffer_size_] = peer;
@@ -356,7 +356,7 @@ namespace p2psp {
         ComputeNextPeerNumber(peer);
       } catch (const std::out_of_range &oor) {
         TRACE("The monitor peer has died!");
-        file.close();
+        //file.close();
         exit(-1);
       }
 
