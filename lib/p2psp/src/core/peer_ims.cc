@@ -24,6 +24,7 @@ using boost::uuids::uuid;
 #include <boost/uuid/uuid_generators.hpp>
 using boost::uuids::random_generator;
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 namespace p2psp {
 
   constexpr char PeerIMS::kSplitterAddr[];
@@ -71,7 +72,8 @@ namespace p2psp {
    }
     
   //Writing chunk data to file
-    std::string fname = "Peer"+lexical_cast<std::string>((random_generator())());
+    boost::posix_time::ptime now = boost::posix_time::second_clock::local_time();
+    std::string fname = "Peer"+boost::posix_time::to_iso_extended_string(now)+lexical_cast<std::string>((random_generator())());
 	std::fstream file(fname,std::ios::out);
 	std::ostream_iterator<char> output_iterator(file);
 	std::ostream_iterator<char> output_iterator2(file, "\nChunk Number\n");
