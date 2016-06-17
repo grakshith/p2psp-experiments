@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 import sys
-f1 = open('../bin/1.hex','r')
-f2 = open('../bin/2.hex','r')
+f1 = open('1.hex','r')
+f2 = open('2.hex','r')
 s=f1.read()
 s2 = f2.read()
 print(len(s))

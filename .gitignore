@@ -4,3 +4,4 @@ lib/p2psp/build
 bin/
 build/
 Peer*
+*.hex
