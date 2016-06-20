@@ -431,7 +431,7 @@ namespace p2psp {
       // sys.stdout.write(Color.cyan)
       TRACE("lost chunk " << std::to_string(chunk_number));
       // sys.stdout.write(Color.none)
-
+      PlayChunk(-1);
       chunk_number = (chunk_number + 1) % Common::kMaxChunkNumber;
     }
     // counter++
@@ -445,7 +445,14 @@ namespace p2psp {
     try {
     std::copy((chunks_[chunk % buffer_size_].data.begin()),
              (chunks_[chunk % buffer_size_].data.end()),output_iterator);
+      if(chunk < 0)
+      {
+      write(player_socket_, buffer(std::vector<char>(1024,0)));
+      }
+      else{
+      
       write(player_socket_, buffer(chunks_[chunk % buffer_size_].data));
+      }
     } catch (std::exception e) {
       TRACE("Player disconnected!");
       file.close();
