@@ -12,6 +12,17 @@
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include "../lib/p2psp/src/util/trace.h"
+#include <arpa/inet.h>
+#include <boost/array.hpp>
+#include <boost/asio.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/thread/thread.hpp>
+#include <ctime>
+#include <fstream>
+#include <string>
+#include <tuple>
+#include <vector>
+
 
 namespace p2psp {
 
