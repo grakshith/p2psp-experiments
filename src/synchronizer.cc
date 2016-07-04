@@ -23,6 +23,7 @@ namespace p2psp {
       }
       catch(std::exception e)
       {
+        // If the argument passed is unknown, print the list of available arguments
         std::cout<<desc<<std::endl;
       }
       boost::program_options::notify(vm);
@@ -33,11 +34,19 @@ namespace p2psp {
       if(vm.count("peers"))
       {
         peer_list = &vm["peers"].as<std::vector<std::string> >();
-        for(std::vector<std::string>::const_iterator it = peer_list->begin();it!=peer_list->end();++it)
-        {
-          thread_group_.interrupt_all();
-          thread_group_.add_thread(new boost::thread(&Synchronizer::ConnectToPeers,this,*it));
-        }
+        // Run the RunThreads function which in turn starts the threads which connect to the peers
+        boost::thread(&Synchronizer::RunThreads,this);
+      }
+    }
+
+    void Synchronizer::RunThreads()
+    {
+      // Iterarate through the peer_list and start a thread to connect to the peer for every peer in peer_list
+      for(std::vector<std::string>::const_iterator it = peer_list->begin();it!=peer_list->end();++it)
+      {
+        thread_group_.interrupt_all();
+        thread_group_.add_thread(new boost::thread(&Synchronizer::ConnectToPeers,this,*it));
+        thread_group_.join_all(); //Wait for all threads to complete
       }
     }
 

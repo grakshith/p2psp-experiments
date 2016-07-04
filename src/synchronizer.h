@@ -38,5 +38,6 @@ public:
     void PlayChunk();  //Play the chunk to the player
     void Synchronize(); //To get the offset from the first peer and synchronize the lists
     void ConnectToPeers(std::string); //Connect the synchronizer with various peers
+    void RunThreads(); //To run the threads to connect to peers
     };
 }
