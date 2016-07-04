@@ -11,6 +11,14 @@
 #include "synchronizer.h"
 
 namespace p2psp {
+    Synchronizer::Synchronizer()
+    {
+      player_socket_(io_service_);
+      acceptor_(io_service_);
+
+    }
+
+
     void Synchronizer::Run(int argc, const char* argv[]) throw(boost::system::system_error)
     {
       boost::program_options::options_description desc("This is the synchronizer node of P2PSP.\n");

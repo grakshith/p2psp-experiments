@@ -31,8 +31,12 @@ public:
     Synchronizer();
     ~Synchronizer();
 
-    const std::vector<std::string>* peer_list;
-    boost::thread_group thread_group_;
+    const std::vector<std::string>* peer_list;                        //Vector which holds the addresses of peers
+    std::vector<std::vector<char> > peer_data;                        //Vector to hold the chunk data of each peer
+    boost::thread_group thread_group_;                                //Thread group manages the peer threads
+    boost::asio::io_service io_service_;                               // Service for I/O operations
+    boost::asio::ip::tcp::acceptor acceptor_;                          // Acceptor used to listen to incoming connections.
+    boost::asio::ip::tcp::socket player_socket_;                       // Socket to send chunks to player
 
     void Run(int argc, const char* argv[]) throw(boost::system::system_error);  //Run the argument parser
     void PlayChunk();  //Play the chunk to the player
