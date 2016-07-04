@@ -33,7 +33,17 @@ namespace p2psp {
       if(vm.count("peers"))
       {
         peer_list = &vm["peers"].as<std::vector<std::string> >();
+        for(std::vector<std::string>::const_iterator it = peer_list->begin();it!=peer_list->end();++it)
+        {
+          thread_group_.interrupt_all();
+          thread_group_.add_thread(new boost::thread(&Synchronizer::ConnectToPeers,this,*it));
+        }
       }
+    }
+
+    void Synchronizer::ConnectToPeers(std::string)
+    {
+
     }
 
 }
