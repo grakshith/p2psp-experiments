@@ -22,7 +22,8 @@
 #include <string>
 #include <tuple>
 #include <vector>
-
+#include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 
 namespace p2psp {
 
@@ -41,7 +42,7 @@ public:
     void Run(int argc, const char* argv[]) throw(boost::system::system_error);  //Run the argument parser
     void PlayChunk();  //Play the chunk to the player
     void Synchronize(); //To get the offset from the first peer and synchronize the lists
-    void ConnectToPeers(std::string); //Connect the synchronizer with various peers
+    void ConnectToPeers(std::string,int) throw(boost::system::system_error); //Connect the synchronizer with various peers
     void RunThreads(); //To run the threads to connect to peers
     };
 }

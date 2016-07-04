@@ -12,9 +12,10 @@
 
 namespace p2psp {
     Synchronizer::Synchronizer()
+    : io_service_(),
+    player_socket_(io_service_),
+    acceptor_(io_service_)
     {
-      player_socket_(io_service_);
-      acceptor_(io_service_);
 
     }
 
@@ -53,13 +54,20 @@ namespace p2psp {
       for(std::vector<std::string>::const_iterator it = peer_list->begin();it!=peer_list->end();++it)
       {
         thread_group_.interrupt_all();
-        thread_group_.add_thread(new boost::thread(&Synchronizer::ConnectToPeers,this,*it));
+        thread_group_.add_thread(new boost::thread(&Synchronizer::ConnectToPeers,this,*it,(it-peer_list->begin())));
         thread_group_.join_all(); //Wait for all threads to complete
       }
     }
 
-    void Synchronizer::ConnectToPeers(std::string)
+    void Synchronizer::ConnectToPeers(std::string s, int id) throw(boost::system::system_error)
     {
+        std::vector<std::string> fields;
+        boost::algorithm::split(fields,s,boost::is_any_of(":"));
+        const boost::asio::ip::address hs = boost::asio::ip::address::from_string(fields[0]);
+        short port = boost::lexical_cast<short>(fields[1]);
+        boost::asio::ip::tcp::endpoint peer(hs,port);
+        boost::asio::ip::tcp::socket peer_socket (io_service_);
+        peer_socket.connect(peer);
 
     }
 
