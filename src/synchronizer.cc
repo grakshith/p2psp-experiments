@@ -11,12 +11,12 @@
 #include "synchronizer.h"
 
 namespace p2psp {
-    void Synchronizer::Run()
+    void Synchronizer::Run(int argc, const char* argv[]) throw(boost::system::system_error)
     {
       boost::program_options::options_description desc("This is the synchronizer node of P2PSP.\n");
       desc.add_options()
       ("help", "Produce this help message and exit.")
-      ("peers",boost::program_options::value<std::vector<std::string>>(),"Peers list");
+      ("peers",boost::program_options::value<std::vector<std::string> >(),"Peers list");
       boost::program_options::variables_map vm;
       try{
       boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
@@ -24,7 +24,15 @@ namespace p2psp {
       catch(std::exception e)
       {
         std::cout<<desc<<std::endl;
-        return 1;
+      }
+      boost::program_options::notify(vm);
+      if(vm.count("help"))
+      {
+        std::cout<< desc <<std::endl;
+      }
+      if(vm.count("peers"))
+      {
+        peer_list = &vm["peers"].as<std::vector<std::string> >();
       }
     }
 
