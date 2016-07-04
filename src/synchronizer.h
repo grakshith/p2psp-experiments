@@ -30,12 +30,13 @@ class Synchronizer {
 public:
     Synchronizer();
     ~Synchronizer();
-    
-    void Run();  //Run the argument parser
+
+    const std::vector<std::string>* peer_list;
+
+
+    void Run(int argc, const char* argv[]) throw(boost::system::system_error);  //Run the argument parser
     void PlayChunk();  //Play the chunk to the player
     void Synchronize(); //To get the offset from the first peer and synchronize the lists
     void ConnectToPeers(); //Connect the synchronizer with various peers
     };
 }
-    
-
