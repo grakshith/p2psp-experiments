@@ -32,11 +32,11 @@ public:
     ~Synchronizer();
 
     const std::vector<std::string>* peer_list;
-
+    boost::thread_group thread_group_;
 
     void Run(int argc, const char* argv[]) throw(boost::system::system_error);  //Run the argument parser
     void PlayChunk();  //Play the chunk to the player
     void Synchronize(); //To get the offset from the first peer and synchronize the lists
-    void ConnectToPeers(); //Connect the synchronizer with various peers
+    void ConnectToPeers(std::string); //Connect the synchronizer with various peers
     };
 }
