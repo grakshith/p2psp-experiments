@@ -68,6 +68,11 @@ namespace p2psp {
         boost::asio::ip::tcp::endpoint peer(hs,port);
         boost::asio::ip::tcp::socket peer_socket (io_service_);
         peer_socket.connect(peer);
+        peer_data[id].resize(1024);
+        while(1)
+        {
+        boost::asio::read(peer_socket,boost::asio::buffer(peer_data[id]));
+        }
 
     }
 
