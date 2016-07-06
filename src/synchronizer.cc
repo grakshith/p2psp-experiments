@@ -76,4 +76,28 @@ namespace p2psp {
 
     }
 
+    void Synchronizer::Synchronize()
+    {
+        /*Here we start with a search string and keep on increasing its length until we find a constant offset from the haystack
+          string. Once we find the offset, we trim the corresponding peer_data vector according to the offset, so that we achieve
+          synchronization. Synchronization is a one time process.
+        */
+        int start_offset=100,offset=6;
+        std::string needle(peer_data[0].begin()+start_offset,peer_data[0].begin()+start_offset+offset);
+        for(std::vector<std::vector<char> >::iterator it = peer_data.begin()+1; it!=peer_data.end();++it) //Iterating through all the elements of peer_data vector
+        {
+            std::string haystack (it->begin(),it->end());
+            std::size_t found,found_before;
+            while((found=haystack.find(needle))!=std::string::npos && found!=found_before)
+            {
+                offset++;
+                needle = std::string(peer_data[0].begin()+start_offset,peer_data[0].begin()+start_offset+offset); //Incremental length of the search string
+                found_before=found; //We stop the loop when the found variable no more changes
+            }
+            if(found == std::string::npos) //If the string matching fails, continue
+            continue;
+            it->erase(it->begin(),it->begin()+found); //Trim the first 'found' bytes of the vector
+        }
+    }
+
 }
