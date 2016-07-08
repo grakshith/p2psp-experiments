@@ -22,6 +22,7 @@
 #include <string>
 #include <tuple>
 #include <vector>
+#include <set>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -34,6 +35,7 @@ public:
 
     const std::vector<std::string>* peer_list;                        //Vector which holds the addresses of peers
     std::vector<std::vector<char> > peer_data;                        //Vector to hold the chunk data of each peer
+    std::set<std::vector<char> > mixed_data;                          //Set that contains chunks after mixing from various peers
     boost::thread_group thread_group_;                                //Thread group manages the peer threads
     boost::asio::io_service io_service_;                               // Service for I/O operations
     boost::asio::ip::tcp::acceptor acceptor_;                          // Acceptor used to listen to incoming connections.

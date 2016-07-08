@@ -67,7 +67,7 @@ namespace p2psp {
         std::vector<std::string> fields;
         boost::algorithm::split(fields,s,boost::is_any_of(":"));
         const boost::asio::ip::address hs = boost::asio::ip::address::from_string(fields[0]);
-        unsigned short port = boost::lexical_cast<short>(fields[1]);
+        unsigned short port = boost::lexical_cast<unsigned short>(fields[1]);
         boost::asio::ip::tcp::endpoint peer(hs,port);
         boost::asio::ip::tcp::socket peer_socket (io_service_);
         peer_socket.connect(peer);
@@ -120,4 +120,8 @@ namespace p2psp {
 
     }
 
+    void Synchronizer::MixStreams()
+    {
+      
+    }
 }
