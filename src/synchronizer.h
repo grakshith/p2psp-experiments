@@ -25,6 +25,7 @@
 #include <set>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
+#include <mutex>
 
 namespace p2psp {
 
@@ -42,6 +43,7 @@ public:
     boost::asio::ip::tcp::socket player_socket_;                       // Socket to send chunks to player
     unsigned short player_port;                                                 // Player Port
     bool synchronized;                                                 //Stores whether peer chunks are synchronized
+    std::mutex mtx;                                                    //Mutex for concurrent I/O
 
     void Run(int argc, const char* argv[]) throw(boost::system::system_error);  //Run the argument parser
     void PlayChunk();  //Play the chunk to the player
