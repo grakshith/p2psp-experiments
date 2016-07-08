@@ -6,13 +6,17 @@ Currently, the experiment is to run splitters in parallel that transmit the same
 ## STATUS
 Synchronizer ***partially*** complete
 
-Synchronize function is now complete.
+~~Synchronize function is now complete.~~
+
+WIP on mixing various streams.
 
 ## TODO
+**Use mutexes wherever there is concurrent I/O**
+
 ~~Create a new entity called Synchronizer that takes multiple streams from the peer and synchronizes them into one single stream and then feeds the player.~~
 
 ~~Develop Synchronizer.~~
 
 Complete the remaining functionality
 
-### Last updated : 06 July, 2016 16:05:00 UTC+0530
+### Last updated : 08 July, 2016 23:50:32 UTC+0530
