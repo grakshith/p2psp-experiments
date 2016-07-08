@@ -38,6 +38,7 @@ public:
     boost::asio::io_service io_service_;                               // Service for I/O operations
     boost::asio::ip::tcp::acceptor acceptor_;                          // Acceptor used to listen to incoming connections.
     boost::asio::ip::tcp::socket player_socket_;                       // Socket to send chunks to player
+    unsigned short player_port;                                                 // Player Port
 
     void Run(int argc, const char* argv[]) throw(boost::system::system_error);  //Run the argument parser
     void PlayChunk();  //Play the chunk to the player

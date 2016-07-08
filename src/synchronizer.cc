@@ -16,8 +16,11 @@ namespace p2psp {
     player_socket_(io_service_),
     acceptor_(io_service_)
     {
-
+      player_port = 15000;
     }
+
+    Synchronizer::~Synchronizer()
+    {}
 
 
     void Synchronizer::Run(int argc, const char* argv[]) throw(boost::system::system_error)
@@ -64,7 +67,7 @@ namespace p2psp {
         std::vector<std::string> fields;
         boost::algorithm::split(fields,s,boost::is_any_of(":"));
         const boost::asio::ip::address hs = boost::asio::ip::address::from_string(fields[0]);
-        short port = boost::lexical_cast<short>(fields[1]);
+        unsigned short port = boost::lexical_cast<short>(fields[1]);
         boost::asio::ip::tcp::endpoint peer(hs,port);
         boost::asio::ip::tcp::socket peer_socket (io_service_);
         peer_socket.connect(peer);
@@ -98,6 +101,23 @@ namespace p2psp {
             continue;
             it->erase(it->begin(),it->begin()+found); //Trim the first 'found' bytes of the vector
         }
+    }
+
+    void Synchronizer::PlayChunk()
+    {
+      boost::asio::ip::tcp::endpoint player_endpoint (boost::asio::ip::tcp::v4(), player_port);
+      acceptor_.open(player_endpoint.protocol);
+      acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
+      acceptor_.bind(player_endpoint);
+      acceptor_.listen();
+      TRACE("Waiting for the player at (" << player_endpoint.address().to_string() << ","
+            << std::to_string(player_endpoint.port())
+            << ")");
+      acceptor_.accept(player_socket_);
+      TRACE("The player is ("
+            << player_socket_.remote_endpoint().address().to_string() << ","
+            << std::to_string(player_socket_.remote_endpoint().port()) << ")");
+    
     }
 
 }
