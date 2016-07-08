@@ -75,6 +75,10 @@ namespace p2psp {
         while(1)
         {
         boost::asio::read(peer_socket,boost::asio::buffer(peer_data[id]));
+        if(synchronized)
+        {
+          mixed_data.insert(peer_data[id].begin(),peer_data[id].begin()+1024); //Add 1024 bytes of each peer chunk to the set
+        }
         }
 
     }
@@ -122,6 +126,6 @@ namespace p2psp {
 
     void Synchronizer::MixStreams()
     {
-      
+
     }
 }
