@@ -106,7 +106,7 @@ namespace p2psp {
     void Synchronizer::PlayChunk()
     {
       boost::asio::ip::tcp::endpoint player_endpoint (boost::asio::ip::tcp::v4(), player_port);
-      acceptor_.open(player_endpoint.protocol);
+      acceptor_.open(player_endpoint.protocol());
       acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
       acceptor_.bind(player_endpoint);
       acceptor_.listen();
@@ -117,7 +117,7 @@ namespace p2psp {
       TRACE("The player is ("
             << player_socket_.remote_endpoint().address().to_string() << ","
             << std::to_string(player_socket_.remote_endpoint().port()) << ")");
-    
+
     }
 
 }
