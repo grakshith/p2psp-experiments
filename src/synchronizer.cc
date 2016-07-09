@@ -32,8 +32,10 @@ namespace p2psp {
       boost::program_options::variables_map vm;
       try{
       boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
+      if(argc < 2)
+      throw std::exception();
       }
-      catch(std::exception e)
+      catch(std::exception& e)
       {
         // If the argument passed is unknown, print the list of available arguments
         std::cout<<desc<<std::endl;
@@ -130,4 +132,17 @@ namespace p2psp {
     {
 
     }
+}
+
+int main(int argc, const char* argv[])
+{
+  try {
+  p2psp::Synchronizer syn;
+  syn.Run(argc, argv);
+  }
+  catch(boost::system::system_error e)
+  {
+    TRACE(e.what());
+  }
+  return -1;
 }
