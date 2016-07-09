@@ -77,7 +77,9 @@ namespace p2psp {
         boost::asio::read(peer_socket,boost::asio::buffer(peer_data[id]));
         if(synchronized)
         {
-          mixed_data.insert(peer_data[id].begin(),peer_data[id].begin()+1024); //Add 1024 bytes of each peer chunk to the set
+          std::vector<char> v (peer_data[id].begin(),peer_data[id].begin()+1024);
+          mixed_data.insert(v); //Add 1024 bytes of each peer chunk to the set
+          peer_data[id].erase(peer_data[id].begin(),peer_data[id].begin()+1024);
         }
         }
 
