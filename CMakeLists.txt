@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 
 option(BUILD_PEER "Build the peer" ON)
 option(BUILD_SPLITTER "Build the splitter" ON)
-
+option(BUILD_SYNCHRONIZER "Build the synchronizer" ON)
 option(BUILD_WITH_CLANG "Build using the Clang compiler" OFF)
 
 if(BUILD_WITH_CLANG)
@@ -100,5 +100,21 @@ if(BUILD_SPLITTER)
   # Enable C++11 for CMake 3.1.0 or later
   set_property(TARGET splitter PROPERTY CXX_STANDARD 11)
   set_property(TARGET splitter PROPERTY CXX_STANDARD_REQUIRED ON)
+endif()
+
+if(BUILD_SYNCHRONIZER)
+  # Executable
+  add_executable(synchronizer "src/synchronizer.cc")
+
+  # Libraries
+  target_link_libraries(synchronizer
+    ${P2PSP_LIBRARY}
+    ${CMAKE_THREAD_LIBS_INIT}
+    ${Boost_LIBRARIES}
+  )
+
+  # Enable C++11 for CMake 3.1.0 or later
+  set_property(TARGET synchronizer PROPERTY CXX_STANDARD 11)
+  set_property(TARGET synchronizer PROPERTY CXX_STANDARD_REQUIRED ON)
 endif()
 
