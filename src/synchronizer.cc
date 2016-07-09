@@ -17,6 +17,7 @@ namespace p2psp {
     acceptor_(io_service_)
     {
       player_port = 15000;
+      peer_data = std::vector<std::vector<char> >();
     }
 
     Synchronizer::~Synchronizer()
@@ -49,6 +50,7 @@ namespace p2psp {
       {
         peer_list = &vm["peers"].as<std::vector<std::string> >();
         TRACE(peer_list->size()<< " peers passed to the synchronizer");
+        peer_data.resize(peer_list->size());
         // Run the RunThreads function which in turn starts the threads which connect to the peers
         boost::thread t1(&Synchronizer::RunThreads,this);
         t1.join();
@@ -80,10 +82,12 @@ namespace p2psp {
         peer_socket.connect(peer);
         TRACE("Connected to "<< s);
         peer_data[id].resize(1024);
+        TRACE("Resized the vector");
         while(1)
         {
         TRACE("Receiving data from "<< s);
         boost::asio::read(peer_socket,boost::asio::buffer(peer_data[id]));
+        peer_data[id].resize(peer_data[id].size()+1024);
         if(synchronized)
         {
           std::vector<char> v (peer_data[id].begin(),peer_data[id].begin()+1024);
