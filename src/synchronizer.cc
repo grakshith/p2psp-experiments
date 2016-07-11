@@ -89,13 +89,15 @@ namespace p2psp {
         TRACE("Resized the vector");
         while(1)
         {
-        TRACE("Receiving data from "<< s);
+        //TRACE("Receiving data from "<< s);
         boost::asio::read(peer_socket,boost::asio::buffer(peer_data[id]));
         peer_data[id].resize(peer_data[id].size()+1024);
         if(synchronized)
         {
           std::vector<char> v (peer_data[id].begin(),peer_data[id].begin()+1024);
+          mtx.lock();
           mixed_data.insert(v); //Add 1024 bytes of each peer chunk to the set
+          mtx.unlock();
           peer_data[id].erase(peer_data[id].begin(),peer_data[id].begin()+1024);
         }
         }
@@ -145,17 +147,28 @@ namespace p2psp {
       TRACE("The player is ("
             << player_socket_.remote_endpoint().address().to_string() << ","
             << std::to_string(player_socket_.remote_endpoint().port()) << ")");
-      for(std::set<std::vector<char> >::const_iterator it = mixed_data.begin(); it!=mixed_data.end();it++)
-      {
+        std::set<std::vector<char> >::iterator it;
+        while((FindNextChunk()))
+        {
         TRACE("Writing to the player");
+        it=mixed_data.begin();
         boost::asio::write(player_socket_,boost::asio::buffer(*it));
+        mtx.lock();
         mixed_data.erase(it);
+        mtx.unlock();
+        }
       }
-    }
 
-    void Synchronizer::MixStreams()
+
+    bool Synchronizer::FindNextChunk()
     {
-
+      if(mixed_data.empty())
+      {
+        boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+        return FindNextChunk();
+      }
+      else
+      return true;
     }
 }
 

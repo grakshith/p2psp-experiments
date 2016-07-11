@@ -50,6 +50,6 @@ public:
     void Synchronize(); //To get the offset from the first peer and synchronize the lists
     void ConnectToPeers(std::string,int) throw(boost::system::system_error); //Connect the synchronizer with various peers
     void RunThreads(); //To run the threads to connect to peers
-    void MixStreams(); //To construct a vector by mixing chunks from peer_data vector
+    bool FindNextChunk(); //To construct a vector by mixing chunks from peer_data vector
     };
 }
