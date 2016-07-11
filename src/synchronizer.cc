@@ -67,6 +67,10 @@ namespace p2psp {
         thread_group_.add_thread(new boost::thread(&Synchronizer::ConnectToPeers,this,*it,(it-peer_list->begin())));
 
       }
+      boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
+      Synchronize();
+      boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
+      thread_group_.add_thread(new boost::thread(&Synchronizer::PlayChunk,this));
       thread_group_.join_all(); //Wait for all threads to complete
     }
 
