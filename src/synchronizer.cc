@@ -68,6 +68,9 @@ namespace p2psp {
 
       }
       boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
+      WaitForThePlayer();
+      thread_group_.add_thread(new boost::thread(&Synchronizer::PlayInitChunks,this));
+      boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
       Synchronize();
       boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
       thread_group_.add_thread(new boost::thread(&Synchronizer::PlayChunk,this));
@@ -135,18 +138,6 @@ namespace p2psp {
 
     void Synchronizer::PlayChunk() throw(boost::system::system_error)
     {
-      boost::asio::ip::tcp::endpoint player_endpoint (boost::asio::ip::tcp::v4(), player_port);
-      acceptor_.open(player_endpoint.protocol());
-      acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
-      acceptor_.bind(player_endpoint);
-      acceptor_.listen();
-      TRACE("Waiting for the player at (" << player_endpoint.address().to_string() << ","
-            << std::to_string(player_endpoint.port())
-            << ")");
-      acceptor_.accept(player_socket_);
-      TRACE("The player is ("
-            << player_socket_.remote_endpoint().address().to_string() << ","
-            << std::to_string(player_socket_.remote_endpoint().port()) << ")");
         std::set<std::vector<char> >::iterator it;
         while((FindNextChunk()))
         {
@@ -169,6 +160,36 @@ namespace p2psp {
       }
       else
       return true;
+    }
+
+    void Synchronizer::PlayInitChunks() throw(boost::system::system_error)
+    {
+      unsigned int offset=0;
+      while(!synchronized && offset!=peer_data[0].size())
+      {
+      std::vector<char> v(peer_data[0][offset],peer_data[0][offset+1024]);
+      boost::asio::write(player_socket_,boost::asio::buffer(v));
+      offset+=1024;
+      }
+      TRACE("Synchronization done or last byte of vector reached. Terminating this thread");
+    }
+
+    void Synchronizer::WaitForThePlayer()
+    {
+      boost::asio::ip::tcp::endpoint player_endpoint (boost::asio::ip::tcp::v4(), player_port);
+      acceptor_.open(player_endpoint.protocol());
+      acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
+      acceptor_.bind(player_endpoint);
+      acceptor_.listen();
+      TRACE("Waiting for the player at (" << player_endpoint.address().to_string() << ","
+            << std::to_string(player_endpoint.port())
+            << ")");
+      acceptor_.accept(player_socket_);
+      TRACE("The player is ("
+            << player_socket_.remote_endpoint().address().to_string() << ","
+            << std::to_string(player_socket_.remote_endpoint().port()) << ")");
+      std::string s = "HTTP/1.1 200 OK\r\n\r\n";
+      boost::asio::write(player_socket_,boost::asio::buffer(&s[0],s.size()));
     }
 }
 

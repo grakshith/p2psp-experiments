@@ -51,5 +51,7 @@ public:
     void ConnectToPeers(std::string,int) throw(boost::system::system_error); //Connect the synchronizer with various peers
     void RunThreads(); //To run the threads to connect to peers
     bool FindNextChunk(); //To construct a vector by mixing chunks from peer_data vector
+    void PlayInitChunks() throw(boost::system::system_error); //To play the initial chunks when synchronization is taking place
+    void WaitForThePlayer();
     };
 }
