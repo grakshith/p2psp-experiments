@@ -131,7 +131,7 @@ namespace p2psp {
         }
     }
 
-    void Synchronizer::PlayChunk()
+    void Synchronizer::PlayChunk() throw(boost::system::system_error)
     {
       boost::asio::ip::tcp::endpoint player_endpoint (boost::asio::ip::tcp::v4(), player_port);
       acceptor_.open(player_endpoint.protocol());
@@ -145,7 +145,12 @@ namespace p2psp {
       TRACE("The player is ("
             << player_socket_.remote_endpoint().address().to_string() << ","
             << std::to_string(player_socket_.remote_endpoint().port()) << ")");
-
+      for(std::set<std::vector<char> >::const_iterator it = mixed_data.begin(); it!=mixed_data.end();it++)
+      {
+        TRACE("Writing to the player");
+        boost::asio::write(player_socket_,boost::asio::buffer(*it));
+        mixed_data.erase(it);
+      }
     }
 
     void Synchronizer::MixStreams()

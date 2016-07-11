@@ -46,7 +46,7 @@ public:
     std::mutex mtx;                                                    //Mutex for concurrent I/O
 
     void Run(int argc, const char* argv[]) throw(boost::system::system_error);  //Run the argument parser
-    void PlayChunk();  //Play the chunk to the player
+    void PlayChunk() throw(boost::system::system_error);  //Play the chunk to the player
     void Synchronize(); //To get the offset from the first peer and synchronize the lists
     void ConnectToPeers(std::string,int) throw(boost::system::system_error); //Connect the synchronizer with various peers
     void RunThreads(); //To run the threads to connect to peers
