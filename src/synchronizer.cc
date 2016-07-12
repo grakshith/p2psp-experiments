@@ -18,6 +18,7 @@ namespace p2psp {
     {
       player_port = 15000;
       peer_data = std::vector<std::vector<char> >();
+      synchronized=false;
     }
 
     Synchronizer::~Synchronizer()
@@ -69,7 +70,7 @@ namespace p2psp {
       }
       boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
       WaitForThePlayer();
-      thread_group_.add_thread(new boost::thread(&Synchronizer::PlayInitChunks,this));
+      //thread_group_.add_thread(new boost::thread(&Synchronizer::PlayInitChunks,this));
       boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
       Synchronize();
       boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
@@ -116,10 +117,11 @@ namespace p2psp {
         TRACE("Attempting to synchronize peers");
         int start_offset=100,offset=6;
         peer_data[0].erase(peer_data[0].begin(),peer_data[0].begin()+start_offset);
-        std::string needle(peer_data[0].begin()+start_offset,peer_data[0].begin()+start_offset+offset);
+        std::string needle(peer_data[0].begin(),peer_data[0].begin()+offset);
         for(std::vector<std::vector<char> >::iterator it = peer_data.begin()+1; it!=peer_data.end();++it) //Iterating through all the elements of peer_data vector
         {
             std::string haystack (it->begin(),it->end());
+            TRACE("Haystack size "<< haystack.size());
             std::size_t found,found_before;
             while((found=haystack.find(needle))!=std::string::npos && found!=found_before)
             {
@@ -130,11 +132,13 @@ namespace p2psp {
             if(found == std::string::npos) //If the string matching fails, continue
             {
             TRACE("Synchronization of peer "<< it-peer_data.begin()<<" with peer 0 failed\nIgnoring the peer");
-            continue;
+            Synchronize();
+            return;
             }
             TRACE("Synchronized peer " << it-peer_data.begin());
             it->erase(it->begin(),it->begin()+found); //Trim the first 'found' bytes of the vector
         }
+        synchronized=true;
     }
 
     void Synchronizer::PlayChunk() throw(boost::system::system_error)
@@ -165,15 +169,16 @@ namespace p2psp {
 
     void Synchronizer::PlayInitChunks() throw(boost::system::system_error)
     {
-      unsigned int offset=0;
+      unsigned int offset=1024;
       TRACE("Playing initial chunks from peer 1");
       while(!synchronized)
       {
-      std::vector<char> v(peer_data[0][offset],peer_data[0][offset+1024]);
+      std::vector<char>::iterator it = peer_data[0].begin();
+      std::vector<char> v(it,it+offset);
       boost::asio::write(player_socket_,boost::asio::buffer(v));
-      offset+=1024;
+      it+=1024;
       }
-      TRACE("Synchronization done or last byte of vector reached. Terminating this thread");
+      TRACE("Synchronization done. Terminating this thread");
     }
 
     void Synchronizer::WaitForThePlayer()
