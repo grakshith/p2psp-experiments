@@ -115,6 +115,7 @@ namespace p2psp {
         */
         TRACE("Attempting to synchronize peers");
         int start_offset=100,offset=6;
+        peer_data[0].erase(peer_data[0].begin(),peer_data[0].begin()+start_offset);
         std::string needle(peer_data[0].begin()+start_offset,peer_data[0].begin()+start_offset+offset);
         for(std::vector<std::vector<char> >::iterator it = peer_data.begin()+1; it!=peer_data.end();++it) //Iterating through all the elements of peer_data vector
         {
@@ -165,7 +166,8 @@ namespace p2psp {
     void Synchronizer::PlayInitChunks() throw(boost::system::system_error)
     {
       unsigned int offset=0;
-      while(!synchronized && offset!=peer_data[0].size())
+      TRACE("Playing initial chunks from peer 1");
+      while(!synchronized)
       {
       std::vector<char> v(peer_data[0][offset],peer_data[0][offset+1024]);
       boost::asio::write(player_socket_,boost::asio::buffer(v));
