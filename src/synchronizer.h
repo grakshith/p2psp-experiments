@@ -22,7 +22,7 @@
 #include <string>
 #include <tuple>
 #include <vector>
-#include <set>
+#include <unordered_set>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include <mutex>
@@ -34,9 +34,23 @@ public:
     Synchronizer();
     ~Synchronizer();
 
+    struct VectorHash
+    {
+      std::size_t operator() (const std::vector<char>& v) const
+      {
+        std::hash<int> hasher;
+        std::size_t hashed;
+        for(int i=0;i<15;i++)
+        {
+          hashed ^= hasher(v[i]);
+        }
+        return hashed;
+      }
+    };
+
     const std::vector<std::string>* peer_list;                        //Vector which holds the addresses of peers
     std::vector<std::vector<char> > peer_data;                        //Vector to hold the chunk data of each peer
-    std::set<std::vector<char> > mixed_data;                          //Set that contains chunks after mixing from various peers
+    std::unordered_set<std::vector<char>, VectorHash> mixed_data;                          //Set that contains chunks after mixing from various peers
     boost::thread_group thread_group_;                                //Thread group manages the peer threads
     boost::asio::io_service io_service_;                               // Service for I/O operations
     boost::asio::ip::tcp::acceptor acceptor_;                          // Acceptor used to listen to incoming connections.

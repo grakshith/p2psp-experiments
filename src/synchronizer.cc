@@ -143,7 +143,7 @@ namespace p2psp {
 
     void Synchronizer::PlayChunk() throw(boost::system::system_error)
     {
-        std::set<std::vector<char> >::iterator it;
+        std::unordered_set<std::vector<char>, VectorHash>::iterator it;
         while((FindNextChunk()))
         {
         TRACE("Writing to the player");
@@ -158,12 +158,8 @@ namespace p2psp {
 
     bool Synchronizer::FindNextChunk()
     {
-      if(mixed_data.empty())
-      {
-        boost::this_thread::sleep(boost::posix_time::milliseconds(100));
-        return FindNextChunk();
-      }
-      else
+      while(mixed_data.empty())
+      boost::this_thread::sleep(boost::posix_time::milliseconds(10));
       return true;
     }
 
