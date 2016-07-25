@@ -19,6 +19,7 @@ namespace p2psp {
       player_port = 15000;
       peer_data = std::vector<std::vector<char> >();
       synchronized=false;
+      buffered = false;
     }
 
     Synchronizer::~Synchronizer()
@@ -70,10 +71,13 @@ namespace p2psp {
       }
       boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
       WaitForThePlayer();
+      mixed_data.resize(set_buffer_size);
       //thread_group_.add_thread(new boost::thread(&Synchronizer::PlayInitChunks,this));
       boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
       Synchronize();
+      thread_group_.add_thread(new boost::thread(&Synchronizer::MixStreams,this));
       boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
+      //InitBuffer();
       thread_group_.add_thread(new boost::thread(&Synchronizer::PlayChunk,this));
       thread_group_.join_all(); //Wait for all threads to complete
     }
@@ -99,9 +103,15 @@ namespace p2psp {
         if(synchronized)
         {
           std::vector<char> v (peer_data[id].begin(),peer_data[id].begin()+1024);
-          mtx.lock();
-          mixed_data.insert(v); //Add 1024 bytes of each peer chunk to the set
-          mtx.unlock();
+          if(id!=peer_id){
+          peer_data[id].erase(peer_data[id].begin(),peer_data[id].begin()+1024);
+          continue;
+          }
+          //mtx.lock();
+          mixed_data[chunk_added%set_buffer_size] = std::vector<char>(v.begin(),v.end()); //Add 1024 bytes of each peer chunk to the set
+          chunk_added++;
+          TRACE("Chunk "<<chunk_added<<" added");
+          //mtx.unlock();
           peer_data[id].erase(peer_data[id].begin(),peer_data[id].begin()+1024);
         }
         }
@@ -143,38 +153,33 @@ namespace p2psp {
 
     void Synchronizer::PlayChunk() throw(boost::system::system_error)
     {
-        std::unordered_set<std::vector<char>, VectorHash>::iterator it;
-        while((FindNextChunk()))
+        while(FindNextChunk())
         {
-        TRACE("Writing to the player");
-        it=mixed_data.begin();
-        boost::asio::write(player_socket_,boost::asio::buffer(*it));
-        mtx.lock();
-        mixed_data.erase(it);
-        mtx.unlock();
+        TRACE("Writing to the player | Chunk "<<chunk_removed<<" | "<<mixed_data.size());
+        mtx2.lock();
+        boost::asio::write(player_socket_,boost::asio::buffer(mixed_data[chunk_removed%set_buffer_size]));
+        chunk_removed++;
+        mtx2.unlock();
+        //TRACE("Chunk "<<chunk_removed<<" removed");
         }
       }
 
 
     bool Synchronizer::FindNextChunk()
     {
-      while(mixed_data.empty())
-      boost::this_thread::sleep(boost::posix_time::milliseconds(10));
+      while(((chunk_added%1000)-(chunk_removed)%1000)<=0);
       return true;
     }
 
-    void Synchronizer::PlayInitChunks() throw(boost::system::system_error)
+    void Synchronizer::MixStreams() throw(boost::system::system_error)
     {
-      unsigned int offset=1024;
-      TRACE("Playing initial chunks from peer 1");
-      while(!synchronized)
+      while(1)
       {
-      std::vector<char>::iterator it = peer_data[0].begin();
-      std::vector<char> v(it,it+offset);
-      boost::asio::write(player_socket_,boost::asio::buffer(v));
-      it+=1024;
+        mtx2.lock();
+        for(;(chunk_added-chunk_removed)<=100;);
+        mtx2.unlock();
       }
-      TRACE("Synchronization done. Terminating this thread");
+
     }
 
     void Synchronizer::WaitForThePlayer()

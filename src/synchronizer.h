@@ -50,14 +50,15 @@ public:
 
     const std::vector<std::string>* peer_list;                        //Vector which holds the addresses of peers
     std::vector<std::vector<char> > peer_data;                        //Vector to hold the chunk data of each peer
-    std::unordered_set<std::vector<char>, VectorHash> mixed_data;                          //Set that contains chunks after mixing from various peers
+    std::vector<std::vector<char> > mixed_data;                       //Vector that contains chunks after mixing from various peers
     boost::thread_group thread_group_;                                //Thread group manages the peer threads
     boost::asio::io_service io_service_;                               // Service for I/O operations
     boost::asio::ip::tcp::acceptor acceptor_;                          // Acceptor used to listen to incoming connections.
     boost::asio::ip::tcp::socket player_socket_;                       // Socket to send chunks to player
-    unsigned short player_port;                                                 // Player Port
-    bool synchronized;                                                 //Stores whether peer chunks are synchronized
-    std::mutex mtx;                                                    //Mutex for concurrent I/O
+    unsigned short player_port;                                        // Player Port
+    bool synchronized,buffered;                                        //Stores whether peer chunks are synchronized
+    std::mutex mtx,mtx2;                                                    //Mutex for concurrent I/O
+    unsigned int set_buffer_size=1024,chunk_added=0,chunk_removed=0,peer_id=0;
 
     void Run(int argc, const char* argv[]) throw(boost::system::system_error);  //Run the argument parser
     void PlayChunk() throw(boost::system::system_error);  //Play the chunk to the player
@@ -65,7 +66,15 @@ public:
     void ConnectToPeers(std::string,int) throw(boost::system::system_error); //Connect the synchronizer with various peers
     void RunThreads(); //To run the threads to connect to peers
     bool FindNextChunk(); //To construct a vector by mixing chunks from peer_data vector
-    void PlayInitChunks() throw(boost::system::system_error); //To play the initial chunks when synchronization is taking place
+    void MixStreams() throw(boost::system::system_error); //To play the initial chunks when synchronization is taking place
     void WaitForThePlayer();
+    void InitBuffer()
+    {
+      TRACE("Initial Buffering");
+      while(mixed_data.size()<100)
+      {
+        TRACE(mixed_data.size());
+      }
+    }
     };
 }
