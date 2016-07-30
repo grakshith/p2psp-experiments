@@ -100,13 +100,13 @@ namespace p2psp {
         while(1)
         {
         //TRACE("Receiving data from "<< s);
-        mtx.lock();
+        //mtx.lock();
         size_t bytes = boost::asio::read(peer_socket,boost::asio::buffer(message,1024));
         //TRACE("Message size "<<bytes);
         std::copy(message.begin(),message.end(),pdpos);
         message = std::vector<char> (1024);
         //peer_data[id].insert(pdpos,message.begin(),message.end());
-        mtx.unlock();
+        //mtx.unlock();
         //peer_data[id].resize(peer_data[id].size()+1024);
         if(synchronized)
         {
@@ -137,10 +137,10 @@ namespace p2psp {
         */
         TRACE("Attempting to synchronize peers");
         int start_offset=100,offset=6;
-        mtx.lock();
+        //mtx.lock();
         peer_data[0].erase(peer_data[0].begin(),peer_data[0].begin()+start_offset);
         peer_data[0].resize(1024*1024);
-        mtx.unlock();
+        //mtx.unlock();
         std::string needle(peer_data[0].begin(),peer_data[0].begin()+offset);
         for(std::vector<std::vector<char> >::iterator it = peer_data.begin()+1; it!=peer_data.end();++it) //Iterating through all the elements of peer_data vector
         {
@@ -182,18 +182,19 @@ namespace p2psp {
 
     bool Synchronizer::FindNextChunk()
     {
-      while((chunk_added)-(chunk_removed)<=0);
+      while((chunk_added)-(chunk_removed)<=0)
+      MixStreams();
       return true;
     }
 
     void Synchronizer::MixStreams() throw(boost::system::system_error)
     {
-      while(1)
-      {
-        mtx2.lock();
+      //while(1)
+      //{
+        //mtx2.lock();
         for(;(chunk_added-chunk_removed)<=10;);
-        mtx2.unlock();
-      }
+        //mtx2.unlock();
+      //}
 
     }
 
