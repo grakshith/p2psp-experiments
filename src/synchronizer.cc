@@ -111,15 +111,17 @@ namespace p2psp {
         if(synchronized)
         {
           //std::vector<char> v (pdpos,pdpos+1024);
+          if(pdpos-peer_data[id].begin()<0)
+          pdpos=peer_data[id].begin();
           if(id!=peer_id){
           //peer_data[id].erase(peer_data[id].begin(),peer_data[id].begin()+1024);
           continue;
           }
-          //mtx.lock();
+          mtx2.lock();
           mixed_data[chunk_added%set_buffer_size] = std::vector<char>(pdpos,pdpos+1024); //Add 1024 bytes of each peer chunk to the set
           chunk_added++;
           TRACE("Chunk "<<chunk_added<<" added at "<<(pdpos-peer_data[id].begin())/1024);
-          //mtx.unlock();
+          mtx2.unlock();
           //peer_data[id].erase(peer_data[id].begin(),peer_data[id].begin()+1024);
         }
         pdpos=(pdpos+1024);
@@ -138,8 +140,6 @@ namespace p2psp {
         TRACE("Attempting to synchronize peers");
         int start_offset=100,offset=6;
         //mtx.lock();
-        peer_data[0].erase(peer_data[0].begin(),peer_data[0].begin()+start_offset);
-        peer_data[0].resize(1024*1024);
         //mtx.unlock();
         std::string needle(peer_data[0].begin(),peer_data[0].begin()+offset);
         for(std::vector<std::vector<char> >::iterator it = peer_data.begin()+1; it!=peer_data.end();++it) //Iterating through all the elements of peer_data vector
@@ -163,6 +163,8 @@ namespace p2psp {
             it->erase(it->begin(),it->begin()+found); //Trim the first 'found' bytes of the vector
             it->resize(1024*1024);
         }
+        peer_data[0].erase(peer_data[0].begin(),peer_data[0].begin()+start_offset+offset-1);
+        peer_data[0].resize(1024*1024);
         synchronized=true;
     }
 
@@ -171,10 +173,10 @@ namespace p2psp {
         while(FindNextChunk())
         {
         TRACE("Writing to the player | Chunk "<<chunk_removed<<" | "<<mixed_data[chunk_removed%set_buffer_size].size());
-        mtx2.lock();
+        //mtx2.lock();
         boost::asio::write(player_socket_,boost::asio::buffer(mixed_data[chunk_removed%set_buffer_size]));
         chunk_removed++;
-        mtx2.unlock();
+        //mtx2.unlock();
         //TRACE("Chunk "<<chunk_removed<<" removed");
         }
       }
