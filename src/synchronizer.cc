@@ -75,7 +75,7 @@ namespace p2psp {
       //thread_group_.add_thread(new boost::thread(&Synchronizer::PlayInitChunks,this));
       boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
       Synchronize();
-      thread_group_.add_thread(new boost::thread(&Synchronizer::MixStreams,this));
+      //thread_group_.add_thread(new boost::thread(&Synchronizer::MixStreams,this));
       boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
       //InitBuffer();
       thread_group_.add_thread(new boost::thread(&Synchronizer::PlayChunk,this));
@@ -93,27 +93,38 @@ namespace p2psp {
         boost::asio::ip::tcp::socket peer_socket (io_service_);
         peer_socket.connect(peer);
         TRACE("Connected to "<< s);
-        peer_data[id].resize(1024);
+        peer_data[id].resize(1024*1024);
+        std::vector<char> message(1024);
+        std::vector<char>::iterator pdpos=peer_data[id].begin();
         TRACE("Resized the vector");
         while(1)
         {
         //TRACE("Receiving data from "<< s);
-        boost::asio::read(peer_socket,boost::asio::buffer(peer_data[id]));
-        peer_data[id].resize(peer_data[id].size()+1024);
+        mtx.lock();
+        size_t bytes = boost::asio::read(peer_socket,boost::asio::buffer(message,1024));
+        //TRACE("Message size "<<bytes);
+        std::copy(message.begin(),message.end(),pdpos);
+        message = std::vector<char> (1024);
+        //peer_data[id].insert(pdpos,message.begin(),message.end());
+        mtx.unlock();
+        //peer_data[id].resize(peer_data[id].size()+1024);
         if(synchronized)
         {
-          std::vector<char> v (peer_data[id].begin(),peer_data[id].begin()+1024);
+          //std::vector<char> v (pdpos,pdpos+1024);
           if(id!=peer_id){
-          peer_data[id].erase(peer_data[id].begin(),peer_data[id].begin()+1024);
+          //peer_data[id].erase(peer_data[id].begin(),peer_data[id].begin()+1024);
           continue;
           }
           //mtx.lock();
-          mixed_data[chunk_added%set_buffer_size] = std::vector<char>(v.begin(),v.end()); //Add 1024 bytes of each peer chunk to the set
+          mixed_data[chunk_added%set_buffer_size] = std::vector<char>(pdpos,pdpos+1024); //Add 1024 bytes of each peer chunk to the set
           chunk_added++;
-          TRACE("Chunk "<<chunk_added<<" added");
+          TRACE("Chunk "<<chunk_added<<" added at "<<(pdpos-peer_data[id].begin())/1024);
           //mtx.unlock();
-          peer_data[id].erase(peer_data[id].begin(),peer_data[id].begin()+1024);
+          //peer_data[id].erase(peer_data[id].begin(),peer_data[id].begin()+1024);
         }
+        pdpos=(pdpos+1024);
+        if(pdpos-peer_data[id].begin()>1024*1024)
+        pdpos=peer_data[id].begin();
         }
 
     }
@@ -126,7 +137,10 @@ namespace p2psp {
         */
         TRACE("Attempting to synchronize peers");
         int start_offset=100,offset=6;
+        mtx.lock();
         peer_data[0].erase(peer_data[0].begin(),peer_data[0].begin()+start_offset);
+        peer_data[0].resize(1024*1024);
+        mtx.unlock();
         std::string needle(peer_data[0].begin(),peer_data[0].begin()+offset);
         for(std::vector<std::vector<char> >::iterator it = peer_data.begin()+1; it!=peer_data.end();++it) //Iterating through all the elements of peer_data vector
         {
@@ -145,8 +159,9 @@ namespace p2psp {
             Synchronize();
             return;
             }
-            TRACE("Synchronized peer " << it-peer_data.begin());
+            TRACE("Synchronized peer " << it-peer_data.begin()<<"at "<<found);
             it->erase(it->begin(),it->begin()+found); //Trim the first 'found' bytes of the vector
+            it->resize(1024*1024);
         }
         synchronized=true;
     }
@@ -155,7 +170,7 @@ namespace p2psp {
     {
         while(FindNextChunk())
         {
-        TRACE("Writing to the player | Chunk "<<chunk_removed<<" | "<<mixed_data.size());
+        TRACE("Writing to the player | Chunk "<<chunk_removed<<" | "<<mixed_data[chunk_removed%set_buffer_size].size());
         mtx2.lock();
         boost::asio::write(player_socket_,boost::asio::buffer(mixed_data[chunk_removed%set_buffer_size]));
         chunk_removed++;
@@ -167,7 +182,7 @@ namespace p2psp {
 
     bool Synchronizer::FindNextChunk()
     {
-      while(((chunk_added%1000)-(chunk_removed)%1000)<=0);
+      while((chunk_added)-(chunk_removed)<=0);
       return true;
     }
 
@@ -176,7 +191,7 @@ namespace p2psp {
       while(1)
       {
         mtx2.lock();
-        for(;(chunk_added-chunk_removed)<=100;);
+        for(;(chunk_added-chunk_removed)<=10;);
         mtx2.unlock();
       }
 
