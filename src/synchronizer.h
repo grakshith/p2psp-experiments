@@ -59,15 +59,16 @@ public:
     bool synchronized,buffered;                                        //Stores whether peer chunks are synchronized
     std::mutex mtx,mtx2;                                                    //Mutex for concurrent I/O
     unsigned int set_buffer_size=1024,chunk_added=0,chunk_removed=0,peer_id=0;
-
+    bool player_alive;
     void Run(int argc, const char* argv[]) throw(boost::system::system_error);  //Run the argument parser
-    void PlayChunk() throw(boost::system::system_error);  //Play the chunk to the player
+    void PlayChunk();  //Play the chunk to the player
     void Synchronize(); //To get the offset from the first peer and synchronize the lists
     void ConnectToPeers(std::string,int) throw(boost::system::system_error); //Connect the synchronizer with various peers
     void RunThreads(); //To run the threads to connect to peers
     bool FindNextChunk(); //To construct a vector by mixing chunks from peer_data vector
     void MixStreams() throw(boost::system::system_error); //To play the initial chunks when synchronization is taking place
     void WaitForThePlayer();
+    void ChangeStream();
     void InitBuffer()
     {
       TRACE("Initial Buffering");
