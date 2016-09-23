@@ -77,5 +77,6 @@ public:
         TRACE(mixed_data.size());
       }
     }
+    void CheckPlayerStatus();
     };
 }

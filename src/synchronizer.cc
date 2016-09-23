@@ -1,12 +1,12 @@
-//
-//  synchronizer.cc
-//  P2PSP
-//
-//  This code is distributed under the GNU General Public License (see
-//  THE_GENERAL_GNU_PUBLIC_LICENSE.txt for extending this information).
-//  Copyright (C) 2016, the P2PSP team.
-//  http://www.p2psp.org
-//
+/*
+ synchronizer.cc
+ P2PSP
+
+ This code is distributed under the GNU General Public License (see
+ THE_GENERAL_GNU_PUBLIC_LICENSE.txt for extending this information).
+ Copyright (C) 2016, the P2PSP team.
+ http://www.p2psp.org
+*/
 
 #include "synchronizer.h"
 
@@ -80,7 +80,8 @@ namespace p2psp {
       //InitBuffer();
       thread_group_.add_thread(new boost::thread(&Synchronizer::PlayChunk,this));
       //thread_group_.add_thread(new boost::thread(&Synchronizer::ChangeStream,this));
-      thread_group_.join_all(); //Wait for all threads to complete
+      CheckPlayerStatus();
+      //thread_group_.join_all(); //Wait for all threads to complete
     }
 
     void Synchronizer::ConnectToPeers(std::string s, int id) throw(boost::system::system_error)
@@ -96,6 +97,7 @@ namespace p2psp {
         std::cout<<"Connected to "<< s<<"\n";
         peer_data[id].resize(1024*1024);
         std::vector<char> message(1024),empty_chunk(100,0);
+        std::string empty_chunk_str (empty_chunk.begin(),empty_chunk.end());
         std::vector<char>::iterator pdpos=peer_data[id].begin();
         std::cout<<"Resized the vector\n";
         while(1)
@@ -104,11 +106,13 @@ namespace p2psp {
         //mtx.lock();
         size_t bytes = boost::asio::read(peer_socket,boost::asio::buffer(message,1024));
         //TRACE("Message size "<<bytes);
-        std::vector<char> empty_chunk_test (message.begin(),message.begin()+100);
-        if(empty_chunk_test==empty_chunk)
+        std::string empty_chunk_test (message.begin(),message.end());
+        size_t found = empty_chunk_test.find(empty_chunk_str);
+        if(found!=std::string::npos)
         {
-          id=(id+1)%peer_list->size();
-          std::cout<<"Changing streams";
+          //peer_id=(peer_id+1)%peer_list->size();
+          std::cout<<"Changing streams\n";
+          ChangeStream();
           continue;
         }
         std::copy(message.begin(),message.end(),pdpos);
@@ -181,7 +185,7 @@ namespace p2psp {
       try{
         while(FindNextChunk())
         {
-        std::cout<<"Writing to the player | Chunk "<<chunk_removed<<" | "<<mixed_data[chunk_removed%set_buffer_size].size()<<"\n";
+        std::cout<<"Writing to the player from stream "<<peer_id<<" | Chunk "<<chunk_removed<<" | "<<mixed_data[chunk_removed%set_buffer_size].size()<<"\n";
         //mtx2.lock();
         boost::asio::write(player_socket_,boost::asio::buffer(mixed_data[chunk_removed%set_buffer_size]));
         chunk_removed++;
@@ -239,6 +243,12 @@ namespace p2psp {
       boost::this_thread::sleep(boost::posix_time::seconds(20));
       peer_id=(++peer_id)%(peer_list->size());
       std::cout<<"Changed Stream\n";
+    }
+
+    void Synchronizer::CheckPlayerStatus()
+    {
+    	while(player_alive);
+    	return;
     }
 }
 
