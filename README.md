@@ -4,7 +4,7 @@ This repository is aimed at experimenting certain things with the P2PSP protocol
 Currently, the experiment is to run splitters in parallel that transmit the same video stream. The objective is to take advantage of this parallelization among the peers so that latency may be reduced and the protocol be made more error resilient.
 
 ## STATUS
-Synchronizer ***almost*** complete
+Synchronizer merged with upstream **[here]** (https://github.com/hehaichi/p2psp-console/blob/master/src/synchronizer.cc).
 
 Only MPEG4-TS works as of now
 
@@ -14,7 +14,7 @@ Only MPEG4-TS works as of now
 
 ~~WIP on mixing various streams.~~
 
-Working on the headers for the synchronized output
+~~Working on the headers for the synchronized output~~
 
 ## TODO
 Extend synchronizer for all video formats
@@ -34,4 +34,4 @@ Extend synchronizer for all video formats
 * ~~Make the output playable by VLC~~
 
 
-### Last updated : 30 July, 2016 23:04:45 UTC+0530
+### Last updated : 3 October, 2016 21:50:45 UTC+0530
