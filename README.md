@@ -18,7 +18,8 @@ Only MPEG4-TS works as of now
 
 ## TODO
 Extend synchronizer for all video formats
-
+Improve the performance
+Debugging
 ~~**Use mutexes wherever there is concurrent I/O**~~
 
 ~~Create a new entity called Synchronizer that takes multiple streams from the peer and synchronizes them into one single stream and then feeds the player.~~
@@ -34,4 +35,4 @@ Extend synchronizer for all video formats
 * ~~Make the output playable by VLC~~
 
 
-### Last updated : 3 October, 2016 21:50:45 UTC+0530
+### Last updated : 29 October, 2017 15:08:45 UTC+0530
